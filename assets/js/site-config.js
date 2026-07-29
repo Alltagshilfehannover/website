@@ -14,5 +14,10 @@ window.SITE_CONFIG = {
   SUPABASE_URL:      '',   // z. B. https://abcdefgh.supabase.co
   SUPABASE_ANON_KEY: '',   // dein anon / public Key aus dem Supabase-Dashboard
   CONTACT_TABLE:     'kontaktanfragen',
-  FALLBACK_EMAIL:    'info@alltagshilfe-hannover.de'  // TODO: echte E-Mail
+  FALLBACK_EMAIL:    'info@alltagshilfe-hannover.de',  // TODO: echte E-Mail
+
+  // Bewerbungen (Lebenslauf/Anschreiben) → Supabase Storage + Tabelle (EU-Region).
+  // Nutzt SUPABASE_URL/SUPABASE_ANON_KEY von oben. Siehe BEWERBUNG-SETUP.md.
+  BEWERBUNG_TABLE:  'bewerbungen',
+  BEWERBUNG_BUCKET: 'bewerbungen'
 };

@@ -128,7 +128,7 @@
   }
 
   /* ------------------------------ Kontaktformular ----------------------- */
-  var form = $('.form');
+  var form = $('.form:not(.form--bewerbung)');
   if (form) {
     var cfg        = window.SITE_CONFIG || {};
     var btn        = form.querySelector('button[type="submit"]');
@@ -203,6 +203,77 @@
       if (btn) { btn.disabled = true; btn.textContent = 'E-Mail-Programm wird geöffnet …'; }
       window.location.href = mailtoUrl(data);
       setTimeout(succeed, 900);
+    });
+  }
+
+  /* --------------------------- Bewerbungsformular ----------------------- */
+  var bwForm = $('.form--bewerbung');
+  if (bwForm) {
+    var bwCfg = window.SITE_CONFIG || {};
+    var toast = $('#bewerbungToast');
+    var toastTimer = null;
+    function hideToast() {
+      if (!toast) return;
+      toast.classList.remove('show');
+      setTimeout(function () { toast.hidden = true; }, 350);
+      if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
+    }
+    function showToast() {
+      if (!toast) return;
+      toast.hidden = false;
+      requestAnimationFrame(function () { toast.classList.add('show'); });
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(hideToast, 15000);   // 15 Sekunden sichtbar
+    }
+    if (toast) toast.addEventListener('click', hideToast);   // wegklickbar (× oder Klick)
+
+    bwForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var consent = bwForm.querySelector('input[type="checkbox"][required]');
+      var err = $('.form__error', bwForm);
+      if (consent && !consent.checked) { if (err) err.style.display = 'block'; consent.focus(); return; }
+      if (err) err.style.display = 'none';
+      var hp = bwForm.querySelector('[name="_hp"]');
+      if (hp && hp.value) { showToast(); bwForm.reset(); return; }   // Bot
+
+      var btn = bwForm.querySelector('button[type="submit"]');
+      var done = function () { showToast(); bwForm.reset(); if (btn) { btn.disabled = false; btn.textContent = 'Bewerbung absenden'; } };
+
+      // Versand an Supabase (EU): Unterlagen in Storage, Daten in Tabelle
+      if (bwCfg.SUPABASE_URL && bwCfg.SUPABASE_ANON_KEY) {
+        if (btn) { btn.disabled = true; btn.textContent = 'Wird gesendet …'; }
+        var base = bwCfg.SUPABASE_URL.replace(/\/+$/, '');
+        var key = bwCfg.SUPABASE_ANON_KEY;
+        var bucket = bwCfg.BEWERBUNG_BUCKET || 'bewerbungen';
+        var data = new FormData(bwForm);
+        var stamp = Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+        var upload = function (file, label) {
+          if (!file || !file.name) return Promise.resolve(null);
+          var path = stamp + '/' + label + '-' + file.name.replace(/[^\w.\-]+/g, '_');
+          return fetch(base + '/storage/v1/object/' + bucket + '/' + path, {
+            method: 'POST',
+            headers: { apikey: key, 'Authorization': 'Bearer ' + key, 'Content-Type': file.type || 'application/octet-stream' },
+            body: file
+          }).then(function (r) { return r.ok ? path : null; }).catch(function () { return null; });
+        };
+        var ll = (bwForm.querySelector('[name="lebenslauf"]').files || [])[0];
+        var an = (bwForm.querySelector('[name="anschreiben"]').files || [])[0];
+        Promise.all([upload(ll, 'lebenslauf'), upload(an, 'anschreiben')]).then(function (paths) {
+          var payload = {
+            vorname: data.get('vorname') || '', nachname: data.get('nachname') || '',
+            telefon: data.get('telefon') || '', email: data.get('email') || '',
+            ort: data.get('ort') || '', stelle: data.get('stelle') || '',
+            lebenslauf_pfad: paths[0], anschreiben_pfad: paths[1]
+          };
+          return fetch(base + '/rest/v1/' + (bwCfg.BEWERBUNG_TABLE || 'bewerbungen'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'apikey': key, 'Authorization': 'Bearer ' + key, 'Prefer': 'return=minimal' },
+            body: JSON.stringify(payload)
+          });
+        }).then(function () { done(); }).catch(function () { done(); });
+      } else {
+        done();   // ohne Backend: nur Bestätigung anzeigen
+      }
     });
   }
 
