@@ -146,11 +146,12 @@
     function mailtoUrl(data) {
       var to = form.getAttribute('data-mailto') || cfg.FALLBACK_EMAIL || '';
       var lines = [
-        'Name: '       + (data.get('vorname') || '') + ' ' + (data.get('nachname') || ''),
-        'Telefon: '    + (data.get('telefon') || ''),
-        'E-Mail: '     + (data.get('email') || ''),
-        'Ort: '        + (data.get('ort') || ''),
-        'Pflegegrad: ' + (data.get('pflegegrad') || 'keine Angabe'),
+        'Name: '      + (data.get('vorname') || '') + ' ' + (data.get('nachname') || ''),
+        'E-Mail: '    + (data.get('email') || ''),
+        'Telefon: '   + (data.get('telefon') || ''),
+        'Adresse: '   + (data.get('adresse') || ''),
+        'Anliegen: '  + (data.get('anliegen') || 'keine Angabe'),
+        'Objektart: ' + (data.get('objektart') || 'keine Angabe'),
         '', 'Nachricht:', (data.get('nachricht') || '')
       ];
       return 'mailto:' + to + '?subject=' + encodeURIComponent('Anfrage über die Website')
@@ -175,13 +176,14 @@
       if (cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY) {
         if (btn) { btn.disabled = true; btn.textContent = 'Wird gesendet …'; }
         var payload = {
-          vorname:    data.get('vorname')    || '',
-          nachname:   data.get('nachname')   || '',
-          telefon:    data.get('telefon')    || '',
-          email:      data.get('email')      || '',
-          ort:        data.get('ort')        || '',
-          pflegegrad: data.get('pflegegrad') || '',
-          nachricht:  data.get('nachricht')  || '',
+          vorname:    data.get('vorname')   || '',
+          nachname:   data.get('nachname')  || '',
+          email:      data.get('email')     || '',
+          telefon:    data.get('telefon')   || '',
+          adresse:    data.get('adresse')   || '',
+          anliegen:   data.get('anliegen')  || '',
+          objektart:  data.get('objektart') || '',
+          nachricht:  data.get('nachricht') || '',
           quelle:     (location.pathname.replace(/^.*\//, '') || 'index.html')
         };
         fetch(cfg.SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/' + (cfg.CONTACT_TABLE || 'kontaktanfragen'), {
@@ -274,6 +276,16 @@
       } else {
         done();   // ohne Backend: nur Bestätigung anzeigen
       }
+    });
+  }
+
+  /* ----------------------------- Blog: Mehr anzeigen -------------------- */
+  var blogMore = $('.blog-more');
+  if (blogMore) {
+    blogMore.addEventListener('click', function () {
+      $$('.post[data-more]').forEach(function (el) { el.classList.remove('is-hidden'); el.removeAttribute('data-more'); });
+      var wrap = blogMore.closest('.blog-more-wrap');
+      if (wrap) wrap.remove();
     });
   }
 

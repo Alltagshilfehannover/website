@@ -19,5 +19,14 @@ window.SITE_CONFIG = {
   // Bewerbungen (Lebenslauf/Anschreiben) → Supabase Storage + Tabelle (EU-Region).
   // Nutzt SUPABASE_URL/SUPABASE_ANON_KEY von oben. Siehe BEWERBUNG-SETUP.md.
   BEWERBUNG_TABLE:  'bewerbungen',
-  BEWERBUNG_BUCKET: 'bewerbungen'
+  BEWERBUNG_BUCKET: 'bewerbungen',
+
+  // Statistik / Tracking (cookiefrei) → Tabelle für anonyme Seitenaufrufe.
+  // Nutzt SUPABASE_URL/SUPABASE_ANON_KEY von oben zum SCHREIBEN. Siehe TRACKING-SETUP.md.
+  TRACK_TABLE:      'seitenaufrufe',
+  // Nur für das Dashboard (stats.html) zum LESEN. Anon-Key mit SELECT-Policy auf die
+  // Statistik-Tabelle. Bleibt leer -> Dashboard zeigt „nicht konfiguriert".
+  STATS_READ_KEY:   '',
+  // Passwort für das Statistik-Dashboard (leichter Zugriffsschutz, bitte ändern).
+  STATS_PASSWORD:   'hannover2026'
 };
