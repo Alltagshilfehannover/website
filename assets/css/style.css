@@ -645,6 +645,8 @@ ul{ margin:0; padding:0; }
 .post p{ color:var(--ink-soft); font-size:.95rem; margin-bottom:16px; }
 .post .more{ margin-top:auto; font-weight:700; color:var(--primary-700); display:inline-flex; align-items:center; gap:6px; }
 .post .more svg{ width:16px; height:16px; flex:0 0 auto; }
+.post--noimg{ border-top:4px solid var(--primary); }
+.post--noimg .post__body{ padding-top:22px; }
 .blog-feature{ width:100%; aspect-ratio:16/8.5; object-fit:cover; border-radius:var(--r-xl);
   box-shadow:var(--shadow); background:var(--cream-2); display:block; }
 
@@ -801,6 +803,15 @@ ul{ margin:0; padding:0; }
   background:var(--cream-2); color:var(--primary-700); border-radius:999px; font-weight:700; font-size:.9rem; }
 .partner-kat-tag svg{ width:18px; height:18px; }
 .split--partner .split__media{ align-self:start; }
+
+/* Lange URLs / Wörter im Fließtext umbrechen (verhindert Handy-Überlauf) */
+.prose{ overflow-wrap:break-word; }
+.prose a{ word-break:break-word; }
+
+/* Thematische Bildsektion (imageless Seiten) */
+.thema-figure{ margin:0 auto; max-width:900px; }
+.thema-figure img{ width:100%; height:auto; max-height:520px; object-fit:cover; display:block;
+  border-radius:var(--r-xl); box-shadow:var(--shadow); }
 
 /* --- Einsatzgebiet-Karte --- */
 .gebiet-map-wrap{ margin-top:6px; }
