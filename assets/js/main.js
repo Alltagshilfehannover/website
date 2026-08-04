@@ -309,3 +309,31 @@
     window.addEventListener('scroll', onScroll, { passive: true });
   }
 })();
+
+/* --------------------- Schriftgröße / Barrierefreiheit ------------------- */
+(function () {
+  var KEY = 'ah_textsize';
+  var html = document.documentElement;
+  var btns = document.querySelectorAll('.a11y-btn');
+  if (!btns.length) return;
+  function apply(n) {
+    html.classList.remove('ts-1', 'ts-2');
+    if (n === 1) html.classList.add('ts-1');
+    else if (n === 2) html.classList.add('ts-2');
+    btns.forEach(function (b) {
+      var on = (+b.getAttribute('data-ts') === n);
+      b.classList.toggle('is-active', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  var saved = 0;
+  try { saved = +localStorage.getItem(KEY) || 0; } catch (e) {}
+  btns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var n = +b.getAttribute('data-ts');
+      try { localStorage.setItem(KEY, n); } catch (e) {}
+      apply(n);
+    });
+  });
+  apply(saved);
+})();
