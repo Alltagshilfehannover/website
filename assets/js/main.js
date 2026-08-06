@@ -310,30 +310,94 @@
   }
 })();
 
-/* --------------------- Schriftgröße / Barrierefreiheit ------------------- */
+/* --------------------- Barrierefreiheits-Menü ------------------- */
 (function () {
-  var KEY = 'ah_textsize';
   var html = document.documentElement;
-  var btns = document.querySelectorAll('.a11y-btn');
-  if (!btns.length) return;
-  function apply(n) {
-    html.classList.remove('ts-1', 'ts-2');
-    if (n === 1) html.classList.add('ts-1');
-    else if (n === 2) html.classList.add('ts-2');
-    btns.forEach(function (b) {
+  var fab = document.querySelector('.a11y-fab');
+  var panel = document.getElementById('a11yPanel');
+  if (!fab || !panel) return;
+  function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+
+  /* Panel öffnen/schließen */
+  function setOpen(open) {
+    panel.hidden = !open;
+    fab.setAttribute('aria-expanded', open ? 'true' : 'false');
+    fab.style.display = open ? 'none' : '';
+    if (open) { var c = panel.querySelector('.a11y-x'); if (c) c.focus(); }
+  }
+  fab.addEventListener('click', function () { setOpen(true); });
+  var xBtn = panel.querySelector('.a11y-x');
+  if (xBtn) xBtn.addEventListener('click', function () { setOpen(false); fab.focus(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !panel.hidden) { setOpen(false); fab.focus(); } });
+  document.addEventListener('click', function (e) { if (!panel.hidden && !panel.contains(e.target) && !fab.contains(e.target)) setOpen(false); });
+
+  /* Schriftgröße (0–3) */
+  var szBtns = panel.querySelectorAll('.a11y-sz');
+  function applyTs(n) {
+    html.classList.remove('ts-1', 'ts-2', 'ts-3');
+    if (n >= 1 && n <= 3) html.classList.add('ts-' + n);
+    szBtns.forEach(function (b) {
       var on = (+b.getAttribute('data-ts') === n);
       b.classList.toggle('is-active', on);
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
   }
-  var saved = 0;
-  try { saved = +localStorage.getItem(KEY) || 0; } catch (e) {}
-  btns.forEach(function (b) {
-    b.addEventListener('click', function () {
-      var n = +b.getAttribute('data-ts');
-      try { localStorage.setItem(KEY, n); } catch (e) {}
-      apply(n);
-    });
+  szBtns.forEach(function (b) { b.addEventListener('click', function () { var n = +b.getAttribute('data-ts'); ls('ah_textsize', n); applyTs(n); }); });
+  applyTs(+ls('ah_textsize') || 0);
+
+  /* Vorlesen (Sprachausgabe des Browsers) */
+  var synth = window.speechSynthesis || null;
+  var readHandler = null;
+  function speak(text, el) {
+    if (!synth) return;
+    synth.cancel();
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = 'de-DE'; u.rate = 0.95;
+    u.onstart = function () { if (el) el.classList.add('a11y-reading'); };
+    u.onend = function () { if (el) el.classList.remove('a11y-reading'); };
+    synth.speak(u);
+  }
+  function onReadClick(e) {
+    if (e.target.closest('a, button, input, select, textarea, label, .a11y-panel, .a11y-fab')) return;
+    var el = e.target.closest('.a11y-fx p, .a11y-fx h1, .a11y-fx h2, .a11y-fx h3, .a11y-fx h4, .a11y-fx li, .a11y-fx blockquote, .a11y-fx figcaption, .a11y-fx dd, .a11y-fx dt');
+    if (!el) return;
+    var t = (el.textContent || '').trim();
+    if (t) { e.preventDefault(); speak(t, el); }
+  }
+  function setRead(on) {
+    if (!synth) on = false;
+    html.classList.toggle('a11y-read', on);
+    if (on && !readHandler) { readHandler = onReadClick; document.addEventListener('click', readHandler, true); }
+    else if (!on && readHandler) {
+      document.removeEventListener('click', readHandler, true); readHandler = null;
+      if (synth) synth.cancel();
+      document.querySelectorAll('.a11y-reading').forEach(function (x) { x.classList.remove('a11y-reading'); });
+    }
+  }
+
+  /* Umschalter */
+  var tgls = panel.querySelectorAll('.a11y-tgl');
+  function setMode(key, on) {
+    if (key === 'read') setRead(on);
+    else html.classList.toggle('a11y-' + key, on);
+    ls('ah_a11y_' + key, on ? '1' : '0');
+    var t = panel.querySelector('.a11y-tgl[data-a11y="' + key + '"]');
+    if (t) t.setAttribute('aria-checked', on ? 'true' : 'false');
+  }
+  tgls.forEach(function (t) {
+    var key = t.getAttribute('data-a11y');
+    var on = ls('ah_a11y_' + key) === '1';
+    t.setAttribute('aria-checked', on ? 'true' : 'false');
+    if (key === 'read' && on) setRead(true);
+    t.addEventListener('click', function () { setMode(key, t.getAttribute('aria-checked') !== 'true'); });
   });
-  apply(saved);
+
+  /* Zurücksetzen */
+  var reset = panel.querySelector('.a11y-reset');
+  if (reset) reset.addEventListener('click', function () {
+    ['contrast', 'gray', 'links', 'motion'].forEach(function (k) { html.classList.remove('a11y-' + k); ls('ah_a11y_' + k, '0'); });
+    setRead(false); ls('ah_a11y_read', '0');
+    ls('ah_textsize', 0); applyTs(0);
+    tgls.forEach(function (t) { t.setAttribute('aria-checked', 'false'); });
+  });
 })();
