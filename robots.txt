@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.haushaltshilfe-hannover.com/sitemap.xml
+Sitemap: https://haushaltshilfe-hannover.com/sitemap.xml
