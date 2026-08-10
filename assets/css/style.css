@@ -141,12 +141,7 @@ ul{ margin:0; padding:0; }
 .nav{ display:flex; align-items:center; gap:14px; height:var(--nav-h); }
 .brand{ display:flex; align-items:center; gap:12px; color:var(--header-fg); font-weight:800; flex:0 0 auto; }
 .brand:hover{ color:#fff; }
-.brand__mark{
-  width:42px; height:42px; border-radius:12px; flex:0 0 auto;
-  background:linear-gradient(135deg,var(--primary),var(--accent));
-  display:grid; place-items:center; color:#fff; font-weight:900; font-size:1.25rem;
-  box-shadow:0 4px 12px rgba(193,91,60,.4);
-}
+.brand__logo{ height:44px; width:auto; flex:0 0 auto; display:block; }
 .brand__name{ font-size:1.16rem; line-height:1.05; letter-spacing:-.01em; }
 .brand__name small{ display:block; font-size:.66rem; font-weight:600; letter-spacing:.06em;
   text-transform:uppercase; color:var(--accent-soft); }
@@ -343,6 +338,8 @@ ul{ margin:0; padding:0; }
 .svc-card:hover{ transform:translateY(-4px); box-shadow:var(--shadow); }
 .svc-card__media{ display:block; }
 .svc-card__media img{ width:100%; aspect-ratio:16/10; object-fit:cover; background:var(--cream-2); display:block; }
+/* Rückenansicht (Rollstuhl): oben ausrichten, damit beide Köpfe im Bild bleiben */
+.svc-card__media img[src*="card-spazieren"]{ object-position:center top; }
 .svc-card__body{ padding:26px 24px 26px; position:relative; }
 .svc-card__ic{ position:absolute; top:-26px; left:24px; width:52px; height:52px; border-radius:14px;
   background:var(--primary); color:#fff; display:grid; place-items:center; box-shadow:0 6px 16px rgba(193,91,60,.35); }
