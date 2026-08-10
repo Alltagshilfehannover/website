@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Statistik – Alltagshilfe Hannover</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23B85234'/%3E%3Ctext x='32' y='45' font-family='Arial' font-size='38' font-weight='900' fill='%23fff' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
+<style>
+  :root{ --primary:#B85234; --accent:#E8925E; --ink:#2B211C; --mute:#6E645B; --cream:#FBF6F2;
+    --line:#ECE1D8; --card:#fff; --ok:#2E7D5B; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; color:var(--ink);
+    background:var(--cream); line-height:1.5; }
+  a{ color:var(--primary); }
+  .wrap{ max-width:1080px; margin:0 auto; padding:24px 20px 64px; }
+  header.top{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px;
+    padding:18px 0; border-bottom:1px solid var(--line); margin-bottom:24px; }
+  .brand{ display:flex; align-items:center; gap:12px; font-weight:800; font-size:1.15rem; }
+  .brand .mk{ width:40px; height:40px; border-radius:11px; background:linear-gradient(135deg,var(--primary),var(--accent));
+    color:#fff; display:grid; place-items:center; font-weight:900; font-size:1.3rem; }
+  .brand small{ display:block; font-weight:500; color:var(--mute); font-size:.8rem; }
+  .btn{ border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:10px; padding:9px 14px;
+    font:inherit; font-weight:600; cursor:pointer; }
+  .btn--primary{ background:var(--primary); color:#fff; border-color:var(--primary); }
+  .grid{ display:grid; gap:16px; }
+  .kpis{ grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); }
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; }
+  .kpi b{ font-size:2rem; display:block; line-height:1.1; letter-spacing:-.02em; }
+  .kpi span{ color:var(--mute); font-size:.85rem; font-weight:600; }
+  .cols{ grid-template-columns:1fr 1fr; margin-top:16px; }
+  @media(max-width:720px){ .cols{ grid-template-columns:1fr; } }
+  h2{ font-size:1.05rem; margin:0 0 14px; }
+  .bar{ display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; margin-bottom:9px; font-size:.9rem; }
+  .bar__track{ grid-column:1/3; height:9px; border-radius:6px; background:var(--cream);
+    border:1px solid var(--line); overflow:hidden; }
+  .bar__fill{ height:100%; background:linear-gradient(90deg,var(--primary),var(--accent)); border-radius:6px; }
+  .bar__label{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .bar__val{ font-weight:700; color:var(--mute); font-variant-numeric:tabular-nums; }
+  .chart{ display:flex; align-items:flex-end; gap:4px; height:150px; }
+  .chart .col{ flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; gap:6px; }
+  .chart .col i{ width:100%; max-width:26px; background:linear-gradient(180deg,var(--accent),var(--primary));
+    border-radius:5px 5px 0 0; display:block; min-height:2px; }
+  .chart .col small{ font-size:.62rem; color:var(--mute); }
+  .note{ color:var(--mute); font-size:.82rem; margin-top:8px; }
+  /* gate */
+  .gate{ position:fixed; inset:0; background:var(--cream); display:grid; place-items:center; z-index:50; }
+  .gate form{ background:#fff; border:1px solid var(--line); border-radius:18px; padding:32px; width:min(360px,92vw);
+    box-shadow:0 20px 50px rgba(43,33,28,.12); text-align:center; }
+  .gate h1{ font-size:1.3rem; margin:6px 0 4px; }
+  .gate p{ color:var(--mute); font-size:.9rem; margin:0 0 18px; }
+  .gate input{ width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:10px; font:inherit;
+    margin-bottom:12px; }
+  .gate .err{ color:#b3261e; font-size:.85rem; min-height:1.2em; margin-bottom:6px; }
+  .hidden{ display:none !important; }
+</style>
+</head>
+<body>
+  <div class="gate" id="gate">
+    <form id="gateForm">
+      <div class="brand" style="justify-content:center"><span class="mk">A</span></div>
+      <h1>Statistik-Dashboard</h1>
+      <p>Mit dem Supabase-Konto anmelden.</p>
+      <input type="email" id="mail" autocomplete="username" placeholder="E-Mail" autofocus>
+      <input type="password" id="pw" autocomplete="current-password" placeholder="Passwort">
+      <div class="err" id="gateErr"></div>
+      <button class="btn btn--primary" type="submit" style="width:100%">Anmelden</button>
+    </form>
+  </div>
+
+  <div class="wrap hidden" id="app">
+    <header class="top">
+      <div class="brand"><span class="mk">A</span><span>Statistik<small>Alle Websites</small></span></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select class="btn" id="site">
+          <option value="">Alle Websites</option>
+        </select>
+        <select class="btn" id="range">
+          <option value="7">Letzte 7 Tage</option>
+          <option value="30" selected>Letzte 30 Tage</option>
+          <option value="90">Letzte 90 Tage</option>
+          <option value="0">Gesamt</option>
+        </select>
+        <button class="btn" id="reload">Aktualisieren</button>
+        <a class="btn" href="/">↩ Website</a>
+      </div>
+    </header>
+
+    <div id="status" class="card" style="margin-bottom:16px;display:none"></div>
+
+    <div class="grid kpis" id="kpis"></div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Seitenaufrufe pro Tag</h2>
+      <div class="chart" id="chart"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px" id="sitesCard">
+      <h2>Aufrufe je Website</h2><div id="sites"></div>
+    </div>
+
+    <div class="grid cols">
+      <div class="card"><h2>Meistbesuchte Seiten</h2><div id="pages"></div></div>
+      <div class="card"><h2>Woher die Besucher kommen</h2><div id="sources"></div></div>
+    </div>
+    <div class="grid cols">
+      <div class="card"><h2>Geräte</h2><div id="devices"></div></div>
+      <div class="card"><h2>Sprache</h2><div id="langs"></div></div>
+    </div>
+    <p class="note">Cookiefreie First-Party-Statistik – es werden ausschließlich anonyme Seitenaufrufe gezählt
+      (keine personenbezogenen Daten, keine eindeutige Besucher-Erkennung). „Besucher" = gezählte Seitenaufrufe.</p>
+  </div>
+
+  <script src="assets/js/site-config.js"></script>
+  <script>
+  (function(){
+    var cfg = window.SITE_CONFIG || {};
+    var $ = function(s){ return document.querySelector(s); };
+    var gate=$('#gate'), app=$('#app');
+    var api = (cfg.SUPABASE_URL||'').replace(/\/+$/,'');
+    var token = '';                       // Zugangs-Token nach der Anmeldung
+
+    function kopf(){ return { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + token }; }
+
+    $('#gateForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      var err = $('#gateErr');
+      if (!api || !cfg.SUPABASE_ANON_KEY){
+        err.textContent = 'Supabase ist in site-config.js noch nicht eingetragen.';
+        return;
+      }
+      err.textContent = 'Anmeldung läuft …';
+      fetch(api + '/auth/v1/token?grant_type=password', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', apikey: cfg.SUPABASE_ANON_KEY },
+        body: JSON.stringify({ email: $('#mail').value.trim(), password: $('#pw').value })
+      })
+      .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
+      .then(function(res){
+        if (!res.ok || !res.j.access_token) throw new Error(res.j.error_description || res.j.msg || 'Anmeldung fehlgeschlagen');
+        token = res.j.access_token;
+        err.textContent = '';
+        gate.classList.add('hidden'); app.classList.remove('hidden');
+        websitesLaden();
+        load();
+      })
+      .catch(function(e2){ err.textContent = e2.message; });
+    });
+
+    $('#reload').addEventListener('click', load);
+    $('#range').addEventListener('change', load);
+    $('#site').addEventListener('change', load);
+
+    function esc(s){ return String(s==null?'':s).replace(/[<>&"]/g, function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]; }); }
+    function status(msg, ok){ var el=$('#status'); el.style.display='block'; el.innerHTML=msg; el.style.color= ok?'var(--ok)':'#b3261e'; }
+
+    // Auswahlliste aus der Tabelle "websites" füllen
+    function websitesLaden(){
+      fetch(api + '/rest/v1/websites?select=schluessel,name&aktiv=is.true&order=name', { headers: kopf() })
+        .then(function(r){ return r.ok ? r.json() : []; })
+        .then(function(rows){
+          var sel = $('#site');
+          (rows||[]).forEach(function(w){
+            var o = document.createElement('option');
+            o.value = w.schluessel; o.textContent = w.name;
+            sel.appendChild(o);
+          });
+        })
+        .catch(function(){});
+    }
+
+    function load(){
+      if (!api || !cfg.SUPABASE_ANON_KEY){
+        status('<b>Noch nicht konfiguriert.</b> Trage in <code>assets/js/site-config.js</code> die Supabase-URL und den anon-Key ein und führe <code>Supabase-Websites/01_schema.sql</code> aus. Bis dahin bleibt das Dashboard leer.', false);
+        return;
+      }
+      var days = parseInt($('#range').value,10);
+      var seite = $('#site').value;
+      var base = api + '/rest/v1/' + (cfg.TRACK_TABLE||'seitenaufrufe');
+      var q = '?select=seite,pfad,titel,quelle,device,sprache,erstellt_am&order=erstellt_am.desc&limit=50000';
+      if (days>0){ var since=new Date(Date.now()-days*864e5).toISOString(); q += '&erstellt_am=gte.'+since; }
+      if (seite) q += '&seite=eq.' + encodeURIComponent(seite);
+      fetch(base+q, { headers: kopf() })
+        .then(function(r){ if(!r.ok) throw new Error(r.status+' '+r.statusText); return r.json(); })
+        .then(render)
+        .catch(function(err){ status('<b>Daten konnten nicht geladen werden:</b> '+esc(err.message)+'. Ist die Anmeldung noch gültig? Notfalls Seite neu laden und erneut anmelden.', false); });
+    }
+
+    function render(rows){
+      $('#status').style.display='none';
+      rows = rows || [];
+      var now=Date.now();
+      var d1=0,d7=0,d30=0;
+      var pages={},sources={},devices={},langs={},byDay={},sites={};
+      rows.forEach(function(r){
+        sites[r.seite||'?'] = (sites[r.seite||'?']||0)+1;
+        var t = r.erstellt_am ? Date.parse(r.erstellt_am) : now;
+        var age = now - t;
+        if (age < 864e5) d1++;
+        if (age < 7*864e5) d7++;
+        if (age < 30*864e5) d30++;
+        pages[r.pfad||'?'] = (pages[r.pfad||'?']||0)+1;
+        sources[r.quelle||'Sonstige'] = (sources[r.quelle||'Sonstige']||0)+1;
+        devices[r.device||'?'] = (devices[r.device||'?']||0)+1;
+        var lg=(r.sprache||'').slice(0,2)||'?'; langs[lg]=(langs[lg]||0)+1;
+        var day = new Date(t); day.setHours(0,0,0,0);
+        var key = day.toISOString().slice(0,10);
+        byDay[key]=(byDay[key]||0)+1;
+      });
+      var total = rows.length;
+
+      $('#kpis').innerHTML = [
+        ['Seitenaufrufe gesamt', total],
+        ['Heute', d1],
+        ['Letzte 7 Tage', d7],
+        ['Letzte 30 Tage', d30]
+      ].map(function(k){ return '<div class="card kpi"><b>'+k[1].toLocaleString('de-DE')+'</b><span>'+k[0]+'</span></div>'; }).join('');
+
+      // chart last N days
+      var span = parseInt($('#range').value,10) || 30; if(span>60) span=60;
+      var cols=[]; var maxV=1;
+      for (var i=span-1;i>=0;i--){ var dd=new Date(now-i*864e5); dd.setHours(0,0,0,0);
+        var key=dd.toISOString().slice(0,10); var v=byDay[key]||0; if(v>maxV)maxV=v;
+        cols.push({k:key,v:v,lbl:dd.getDate()+'.'+(dd.getMonth()+1)}); }
+      $('#chart').innerHTML = cols.map(function(c,idx){
+        var show = span<=14 || idx%Math.ceil(span/12)===0;
+        return '<div class="col" title="'+c.k+': '+c.v+'"><i style="height:'+(c.v/maxV*130)+'px"></i><small>'+(show?c.lbl:'')+'</small></div>';
+      }).join('');
+
+      // „Aufrufe je Website" nur zeigen, wenn nicht ohnehin auf eine gefiltert ist
+      var einzeln = !!$('#site').value;
+      $('#sitesCard').style.display = einzeln ? 'none' : '';
+      if (!einzeln) bars('#sites', sites, total, false);
+
+      bars('#pages', pages, total, true);
+      bars('#sources', sources, total, false);
+      bars('#devices', devices, total, false);
+      bars('#langs', langs, total, false);
+    }
+
+    function bars(sel, obj, total, isPage){
+      var arr = Object.keys(obj).map(function(k){ return [k,obj[k]]; }).sort(function(a,b){ return b[1]-a[1]; }).slice(0,8);
+      if (!arr.length){ document.querySelector(sel).innerHTML='<p class="note">Noch keine Daten.</p>'; return; }
+      var max = arr[0][1]||1;
+      document.querySelector(sel).innerHTML = arr.map(function(x){
+        var pct = Math.round(x[1]/total*100);
+        var label = isPage ? x[0].replace(/\.html$/,'') : x[0];
+        return '<div class="bar"><span class="bar__label" title="'+label+'">'+ (label||'?') +'</span>'
+          + '<span class="bar__val">'+x[1]+' · '+pct+'%</span>'
+          + '<span class="bar__track"><span class="bar__fill" style="width:'+Math.max(2,x[1]/max*100)+'%"></span></span></div>';
+      }).join('');
+    }
+  })();
+  </script>
+</body>
+</html>

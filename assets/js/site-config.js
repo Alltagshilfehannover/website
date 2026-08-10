@@ -1,32 +1,36 @@
 /* =========================================================================
-   Frontend-Konfiguration – HIER deine Supabase-Werte eintragen.
-   (Diese Datei kannst du direkt bearbeiten, ohne die Seite neu zu bauen.)
+   Frontend-Konfiguration – hier die Supabase-Werte eintragen.
+   (Direkt bearbeitbar, die Seite muss dafür NICHT neu gebaut werden.)
+
+   Ein Supabase-Projekt bedient mehrere Websites. Jede Website hat einen
+   eigenen SITE_KEY – daran erkennt die Datenbank, woher eine Anfrage kommt.
+   Die erlaubten Schlüssel stehen in der Tabelle "websites":
+       hannover  ·  braunschweig  ·  fensterputz
+   >>> Bei jeder Website denselben SITE_KEY wie in der Datenbank eintragen. <<<
 
    Der anon-/public-Key darf öffentlich im Frontend stehen – das ist bei
-   Supabase so vorgesehen. Die Sicherheit kommt aus Row Level Security (RLS):
-   Mit diesem Key kann man NUR neue Anfragen einfügen, aber KEINE lesen.
+   Supabase so vorgesehen. Die Sicherheit kommt aus Row Level Security:
+   Mit diesem Key kann man NUR neue Einträge anlegen, aber KEINE lesen.
    >>> Den service_role-Key NIEMALS hier eintragen! <<<
 
-   Solange die Felder leer sind, öffnet das Formular ersatzweise das
-   E-Mail-Programm (mailto). Siehe SUPABASE-SETUP.md für die Einrichtung.
+   Solange SUPABASE_URL/-KEY leer sind, öffnet das Kontaktformular
+   ersatzweise das E-Mail-Programm (mailto) und die Statistik bleibt aus.
+   Einrichtung Schritt für Schritt: Supabase-Websites/ANLEITUNG.md
    ========================================================================= */
 window.SITE_CONFIG = {
-  SUPABASE_URL:      '',   // z. B. https://abcdefgh.supabase.co
-  SUPABASE_ANON_KEY: '',   // dein anon / public Key aus dem Supabase-Dashboard
+  /* --- Diese Website ------------------------------------------------- */
+  SITE_KEY:          'hannover',   // Schlüssel dieser Website (siehe oben)
+
+  /* --- Verbindung (für alle drei Websites identisch) ------------------ */
+  SUPABASE_URL:      'https://klulpfmdwynuctiukpwy.supabase.co',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtsdWxwZm1kd3ludWN0aXVrcHd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYzNzM3MjAsImV4cCI6MjEwMTk0OTcyMH0.cuQQ0I_dqLXb3eUn7Qc2UDysqaOke2xgQmYsSH9GV-g',
+
+  /* --- Tabellen (nicht ändern) ---------------------------------------- */
   CONTACT_TABLE:     'kontaktanfragen',
-  FALLBACK_EMAIL:    'info@alltagshilfe-hannover.de',  // TODO: echte E-Mail
+  BEWERBUNG_TABLE:   'bewerbungen',
+  BEWERBUNG_BUCKET:  'bewerbungen',
+  TRACK_TABLE:       'seitenaufrufe',
 
-  // Bewerbungen (Lebenslauf/Anschreiben) → Supabase Storage + Tabelle (EU-Region).
-  // Nutzt SUPABASE_URL/SUPABASE_ANON_KEY von oben. Siehe BEWERBUNG-SETUP.md.
-  BEWERBUNG_TABLE:  'bewerbungen',
-  BEWERBUNG_BUCKET: 'bewerbungen',
-
-  // Statistik / Tracking (cookiefrei) → Tabelle für anonyme Seitenaufrufe.
-  // Nutzt SUPABASE_URL/SUPABASE_ANON_KEY von oben zum SCHREIBEN. Siehe TRACKING-SETUP.md.
-  TRACK_TABLE:      'seitenaufrufe',
-  // Nur für das Dashboard (stats.html) zum LESEN. Anon-Key mit SELECT-Policy auf die
-  // Statistik-Tabelle. Bleibt leer -> Dashboard zeigt „nicht konfiguriert".
-  STATS_READ_KEY:   '',
-  // Passwort für das Statistik-Dashboard (leichter Zugriffsschutz, bitte ändern).
-  STATS_PASSWORD:   'hannover2026'
+  /* --- Ausweichweg, wenn Supabase nicht eingerichtet ist --------------- */
+  FALLBACK_EMAIL:    'info@haushaltshilfe-hannover.com'
 };

@@ -8,6 +8,7 @@
   'use strict';
   var cfg = window.SITE_CONFIG || {};
   if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) return;         // erst nach Einrichtung aktiv
+  if (!cfg.SITE_KEY) return;                                       // ohne Website-Schlüssel lehnt die DB ab
   if (navigator.doNotTrack === '1' || window.doNotTrack === '1') return; // „Do Not Track" respektieren
 
   var ref = '', refHost = '';
@@ -27,6 +28,7 @@
   var device = w > 0 && w < 640 ? 'Mobil' : w < 1024 ? 'Tablet' : 'Desktop';
 
   var payload = {
+    seite:         cfg.SITE_KEY,
     pfad:          (location.pathname.replace(/\/+$/, '').split('/').pop() || 'index'),
     titel:         (document.title || '').slice(0, 200),
     quelle:        quelle,

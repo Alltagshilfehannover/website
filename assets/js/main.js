@@ -173,9 +173,10 @@
       var data = new FormData(form);
 
       // 3a) Supabase (wenn konfiguriert): Anfrage in der Datenbank speichern
-      if (cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY) {
+      if (cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY && cfg.SITE_KEY) {
         if (btn) { btn.disabled = true; btn.textContent = 'Wird gesendet …'; }
         var payload = {
+          seite:      cfg.SITE_KEY,
           vorname:    data.get('vorname')   || '',
           nachname:   data.get('nachname')  || '',
           email:      data.get('email')     || '',
@@ -242,13 +243,14 @@
       var done = function () { showToast(); bwForm.reset(); if (btn) { btn.disabled = false; btn.textContent = 'Bewerbung absenden'; } };
 
       // Versand an Supabase (EU): Unterlagen in Storage, Daten in Tabelle
-      if (bwCfg.SUPABASE_URL && bwCfg.SUPABASE_ANON_KEY) {
+      if (bwCfg.SUPABASE_URL && bwCfg.SUPABASE_ANON_KEY && bwCfg.SITE_KEY) {
         if (btn) { btn.disabled = true; btn.textContent = 'Wird gesendet …'; }
         var base = bwCfg.SUPABASE_URL.replace(/\/+$/, '');
         var key = bwCfg.SUPABASE_ANON_KEY;
         var bucket = bwCfg.BEWERBUNG_BUCKET || 'bewerbungen';
         var data = new FormData(bwForm);
-        var stamp = Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+        // Ordner je Website – die Datenbank lässt nur bekannte Schlüssel zu.
+        var stamp = bwCfg.SITE_KEY + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
         var upload = function (file, label) {
           if (!file || !file.name) return Promise.resolve(null);
           var path = stamp + '/' + label + '-' + file.name.replace(/[^\w.\-]+/g, '_');
@@ -262,6 +264,7 @@
         var an = (bwForm.querySelector('[name="anschreiben"]').files || [])[0];
         Promise.all([upload(ll, 'lebenslauf'), upload(an, 'anschreiben')]).then(function (paths) {
           var payload = {
+            seite: bwCfg.SITE_KEY,
             vorname: data.get('vorname') || '', nachname: data.get('nachname') || '',
             telefon: data.get('telefon') || '', email: data.get('email') || '',
             ort: data.get('ort') || '', stelle: data.get('stelle') || '',
