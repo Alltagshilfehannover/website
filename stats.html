@@ -4,25 +4,27 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>Statistik – Alltagshilfe Hannover</title>
+<title>Dashboard – Alltagshilfe Hannover</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23B85234'/%3E%3Ctext x='32' y='45' font-family='Arial' font-size='38' font-weight='900' fill='%23fff' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
 <style>
   :root{ --primary:#B85234; --accent:#E8925E; --ink:#2B211C; --mute:#6E645B; --cream:#FBF6F2;
-    --line:#ECE1D8; --card:#fff; --ok:#2E7D5B; }
+    --line:#ECE1D8; --card:#fff; --ok:#2E7D5B; --warn:#B7791F; }
   *{ box-sizing:border-box; }
   body{ margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; color:var(--ink);
     background:var(--cream); line-height:1.5; }
   a{ color:var(--primary); }
   .wrap{ max-width:1080px; margin:0 auto; padding:24px 20px 64px; }
   header.top{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px;
-    padding:18px 0; border-bottom:1px solid var(--line); margin-bottom:24px; }
+    padding:18px 0; border-bottom:1px solid var(--line); margin-bottom:18px; }
   .brand{ display:flex; align-items:center; gap:12px; font-weight:800; font-size:1.15rem; }
   .brand .mk{ width:40px; height:40px; border-radius:11px; background:linear-gradient(135deg,var(--primary),var(--accent));
     color:#fff; display:grid; place-items:center; font-weight:900; font-size:1.3rem; }
   .brand small{ display:block; font-weight:500; color:var(--mute); font-size:.8rem; }
   .btn{ border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:10px; padding:9px 14px;
     font:inherit; font-weight:600; cursor:pointer; }
+  .btn:hover{ border-color:var(--accent); }
   .btn--primary{ background:var(--primary); color:#fff; border-color:var(--primary); }
+  .btn--klein{ padding:6px 11px; font-size:.85rem; }
   .grid{ display:grid; gap:16px; }
   .kpis{ grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); }
   .card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; }
@@ -43,7 +45,40 @@
     border-radius:5px 5px 0 0; display:block; min-height:2px; }
   .chart .col small{ font-size:.62rem; color:var(--mute); }
   .note{ color:var(--mute); font-size:.82rem; margin-top:8px; }
-  /* gate */
+  .hidden{ display:none !important; }
+
+  /* Reiter */
+  .reiter{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+  .reiter button{ border:1px solid var(--line); background:#fff; border-radius:999px; padding:9px 16px;
+    font:inherit; font-weight:700; cursor:pointer; color:var(--mute); }
+  .reiter button.an{ background:var(--primary); border-color:var(--primary); color:#fff; }
+  .reiter .zahl{ display:inline-grid; place-items:center; min-width:21px; height:21px; padding:0 6px;
+    margin-left:7px; border-radius:999px; background:var(--primary); color:#fff;
+    font-size:.72rem; font-weight:800; vertical-align:1px; }
+  .reiter button.an .zahl{ background:#fff; color:var(--primary); }
+
+  /* Eintraege (Anfragen / Bewerbungen) */
+  .eintrag{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px 20px;
+    margin-bottom:12px; }
+  .eintrag.neu{ border-left:4px solid var(--primary); }
+  .eintrag__kopf{ display:flex; flex-wrap:wrap; gap:10px; align-items:baseline;
+    justify-content:space-between; margin-bottom:10px; }
+  .eintrag__name{ font-weight:800; font-size:1.05rem; }
+  .eintrag__zeit{ color:var(--mute); font-size:.83rem; }
+  .zeile{ display:flex; flex-wrap:wrap; gap:6px 18px; font-size:.92rem; margin-bottom:6px; }
+  .zeile b{ font-weight:600; color:var(--mute); font-size:.83rem; display:block; }
+  .nachricht{ background:var(--cream); border-radius:11px; padding:12px 14px; margin:10px 0;
+    white-space:pre-wrap; font-size:.93rem; }
+  .etikett{ display:inline-block; padding:2px 10px; border-radius:999px; font-size:.75rem; font-weight:800;
+    border:1px solid; }
+  .et-neu{ color:var(--primary); border-color:var(--primary); background:#fdf3ef; }
+  .et-arbeit{ color:var(--warn); border-color:var(--warn); background:#fdf7e9; }
+  .et-erledigt{ color:var(--ok); border-color:var(--ok); background:#eef7f2; }
+  .aktionen{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; padding-top:12px;
+    border-top:1px solid var(--line); }
+  .leer{ text-align:center; color:var(--mute); padding:40px 20px; }
+
+  /* Anmeldung */
   .gate{ position:fixed; inset:0; background:var(--cream); display:grid; place-items:center; z-index:50; }
   .gate form{ background:#fff; border:1px solid var(--line); border-radius:18px; padding:32px; width:min(360px,92vw);
     box-shadow:0 20px 50px rgba(43,33,28,.12); text-align:center; }
@@ -52,14 +87,13 @@
   .gate input{ width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:10px; font:inherit;
     margin-bottom:12px; }
   .gate .err{ color:#b3261e; font-size:.85rem; min-height:1.2em; margin-bottom:6px; }
-  .hidden{ display:none !important; }
 </style>
 </head>
 <body>
   <div class="gate" id="gate">
     <form id="gateForm">
       <div class="brand" style="justify-content:center"><span class="mk">A</span></div>
-      <h1>Statistik-Dashboard</h1>
+      <h1>Dashboard</h1>
       <p>Mit dem Supabase-Konto anmelden.</p>
       <input type="email" id="mail" autocomplete="username" placeholder="E-Mail" autofocus>
       <input type="password" id="pw" autocomplete="current-password" placeholder="Passwort">
@@ -70,64 +104,121 @@
 
   <div class="wrap hidden" id="app">
     <header class="top">
-      <div class="brand"><span class="mk">A</span><span>Statistik<small>Alle Websites</small></span></div>
+      <div class="brand"><span class="mk">A</span><span>Dashboard<small>Alle Websites</small></span></div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <select class="btn" id="site">
-          <option value="">Alle Websites</option>
-        </select>
-        <select class="btn" id="range">
-          <option value="7">Letzte 7 Tage</option>
-          <option value="30" selected>Letzte 30 Tage</option>
-          <option value="90">Letzte 90 Tage</option>
-          <option value="0">Gesamt</option>
-        </select>
+        <select class="btn" id="site"><option value="">Alle Websites</option></select>
         <button class="btn" id="reload">Aktualisieren</button>
         <a class="btn" href="/">↩ Website</a>
       </div>
     </header>
 
+    <nav class="reiter">
+      <button data-ansicht="anfragen" class="an">Anfragen<span class="zahl hidden" id="zahlAnfragen">0</span></button>
+      <button data-ansicht="bewerbungen">Bewerbungen<span class="zahl hidden" id="zahlBewerbungen">0</span></button>
+      <button data-ansicht="statistik">Besucher</button>
+    </nav>
+
     <div id="status" class="card" style="margin-bottom:16px;display:none"></div>
 
-    <div class="grid kpis" id="kpis"></div>
+    <!-- ======================= Anfragen ======================= -->
+    <section id="v-anfragen">
+      <div class="card" style="margin-bottom:16px;display:flex;flex-wrap:wrap;gap:12px;
+                               align-items:center;justify-content:space-between">
+        <span class="note" style="margin:0" id="anfragenInfo">Wird geladen …</span>
+        <label style="display:flex;align-items:center;gap:8px;font-size:.9rem;font-weight:600;cursor:pointer">
+          <input type="checkbox" id="nurOffeneA" checked> Nur unerledigte zeigen
+        </label>
+      </div>
+      <div id="anfragen"></div>
+    </section>
 
-    <div class="card" style="margin-top:16px">
-      <h2>Seitenaufrufe pro Tag</h2>
-      <div class="chart" id="chart"></div>
-    </div>
+    <!-- ===================== Bewerbungen ====================== -->
+    <section id="v-bewerbungen" class="hidden">
+      <div class="card" style="margin-bottom:16px;display:flex;flex-wrap:wrap;gap:12px;
+                               align-items:center;justify-content:space-between">
+        <span class="note" style="margin:0" id="bewerbungenInfo">Wird geladen …</span>
+        <label style="display:flex;align-items:center;gap:8px;font-size:.9rem;font-weight:600;cursor:pointer">
+          <input type="checkbox" id="nurOffeneB" checked> Nur unerledigte zeigen
+        </label>
+      </div>
+      <div id="bewerbungen"></div>
+    </section>
 
-    <div class="card" style="margin-top:16px" id="sitesCard">
-      <h2>Aufrufe je Website</h2><div id="sites"></div>
-    </div>
+    <!-- ====================== Besucher ======================== -->
+    <section id="v-statistik" class="hidden">
+      <div class="card" style="margin-bottom:16px;display:flex;flex-wrap:wrap;gap:14px;
+                               align-items:center;justify-content:space-between">
+        <span id="seit" class="note" style="margin:0"></span>
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+          <select class="btn" id="range">
+            <option value="7" selected>Letzte 7 Tage</option>
+            <option value="30">Letzte 30 Tage</option>
+            <option value="90">Letzte 90 Tage</option>
+            <option value="0">Gesamt</option>
+          </select>
+          <label style="display:flex;align-items:center;gap:8px;font-size:.9rem;font-weight:600;cursor:pointer">
+            <input type="checkbox" id="selbst"> Eigene Besuche nicht mitzählen
+          </label>
+        </div>
+      </div>
 
-    <div class="grid cols">
-      <div class="card"><h2>Meistbesuchte Seiten</h2><div id="pages"></div></div>
-      <div class="card"><h2>Woher die Besucher kommen</h2><div id="sources"></div></div>
-    </div>
-    <div class="grid cols">
-      <div class="card"><h2>Geräte</h2><div id="devices"></div></div>
-      <div class="card"><h2>Sprache</h2><div id="langs"></div></div>
-    </div>
-    <p class="note">Cookiefreie First-Party-Statistik – es werden ausschließlich anonyme Seitenaufrufe gezählt
-      (keine personenbezogenen Daten, keine eindeutige Besucher-Erkennung). „Besucher" = gezählte Seitenaufrufe.</p>
+      <div class="grid kpis" id="kpis"></div>
+
+      <div class="card" style="margin-top:16px">
+        <h2>Seitenaufrufe pro Tag</h2>
+        <div class="chart" id="chart"></div>
+      </div>
+
+      <div class="card" style="margin-top:16px" id="sitesCard">
+        <h2>Aufrufe je Website</h2><div id="sites"></div>
+      </div>
+
+      <div class="grid cols">
+        <div class="card"><h2>Meistbesuchte Seiten</h2><div id="pages"></div></div>
+        <div class="card"><h2>Woher die Besucher kommen</h2><div id="sources"></div></div>
+      </div>
+      <div class="grid cols">
+        <div class="card"><h2>Geräte</h2><div id="devices"></div></div>
+        <div class="card"><h2>Sprache</h2><div id="langs"></div></div>
+      </div>
+      <p class="note">Cookiefreie First-Party-Statistik – es werden ausschließlich anonyme Seitenaufrufe gezählt
+        (keine personenbezogenen Daten, keine eindeutige Besucher-Erkennung). „Besucher" = gezählte Seitenaufrufe.</p>
+    </section>
   </div>
 
   <script src="assets/js/site-config.js"></script>
   <script>
   (function(){
     var cfg = window.SITE_CONFIG || {};
-    var $ = function(s){ return document.querySelector(s); };
+    var $  = function(s, w){ return (w||document).querySelector(s); };
+    var $$ = function(s, w){ return Array.prototype.slice.call((w||document).querySelectorAll(s)); };
     var gate=$('#gate'), app=$('#app');
     var api = (cfg.SUPABASE_URL||'').replace(/\/+$/,'');
-    var token = '';                       // Zugangs-Token nach der Anmeldung
+    var token = '';                                  // Zugangs-Token nach der Anmeldung
+    var firmen = {};                                 // schluessel -> Name
 
-    function kopf(){ return { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + token }; }
+    function kopf(extra){
+      var h = { apikey: cfg.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + token };
+      if (extra) for (var k in extra) h[k] = extra[k];
+      return h;
+    }
+    function esc(s){ return String(s==null?'':s).replace(/[<>&"]/g, function(c){
+      return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]; }); }
+    function status(msg, ok){ var el=$('#status'); el.style.display='block'; el.innerHTML=msg;
+      el.style.color= ok?'var(--ok)':'#b3261e'; }
+    function datum(s){
+      if (!s) return '';
+      var d = new Date(s);
+      return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})
+           + ', ' + d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}) + ' Uhr';
+    }
 
+    /* ------------------------------ Anmeldung ------------------------------ */
     $('#gateForm').addEventListener('submit', function(e){
       e.preventDefault();
       var err = $('#gateErr');
       if (!api || !cfg.SUPABASE_ANON_KEY){
-        err.textContent = 'Supabase ist in site-config.js noch nicht eingetragen.';
-        return;
+        err.textContent = 'Supabase ist in site-config.js noch nicht eingetragen.'; return;
       }
       err.textContent = 'Anmeldung läuft …';
       fetch(api + '/auth/v1/token?grant_type=password', {
@@ -137,53 +228,274 @@
       })
       .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
       .then(function(res){
-        if (!res.ok || !res.j.access_token) throw new Error(res.j.error_description || res.j.msg || 'Anmeldung fehlgeschlagen');
+        if (!res.ok || !res.j.access_token)
+          throw new Error(res.j.error_description || res.j.msg || 'Anmeldung fehlgeschlagen');
         token = res.j.access_token;
         err.textContent = '';
         gate.classList.add('hidden'); app.classList.remove('hidden');
         websitesLaden();
-        load();
+        allesLaden();
       })
       .catch(function(e2){ err.textContent = e2.message; });
     });
 
-    $('#reload').addEventListener('click', load);
-    $('#range').addEventListener('change', load);
-    $('#site').addEventListener('change', load);
+    /* -------------------------------- Reiter ------------------------------- */
+    $$('.reiter button').forEach(function(b){
+      b.addEventListener('click', function(){
+        $$('.reiter button').forEach(function(x){ x.classList.remove('an'); });
+        b.classList.add('an');
+        ['anfragen','bewerbungen','statistik'].forEach(function(v){
+          $('#v-'+v).classList.toggle('hidden', v !== b.dataset.ansicht);
+        });
+        if (b.dataset.ansicht === 'statistik'){ messungSeit(); besucherLaden(); }
+      });
+    });
 
-    function esc(s){ return String(s==null?'':s).replace(/[<>&"]/g, function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]; }); }
-    function status(msg, ok){ var el=$('#status'); el.style.display='block'; el.innerHTML=msg; el.style.color= ok?'var(--ok)':'#b3261e'; }
+    $('#reload').addEventListener('click', allesLaden);
+    $('#site').addEventListener('change', allesLaden);
+    $('#range').addEventListener('change', besucherLaden);
+    $('#nurOffeneA').addEventListener('change', anfragenLaden);
+    $('#nurOffeneB').addEventListener('change', bewerbungenLaden);
 
-    // Auswahlliste aus der Tabelle "websites" füllen
+    function allesLaden(){ anfragenLaden(); bewerbungenLaden(); besucherLaden(); messungSeit(); }
+    function seitenFilter(){
+      var s = $('#site').value;
+      return s ? '&seite=eq.' + encodeURIComponent(s) : '';
+    }
+
+    /* Auswahlliste der Websites */
     function websitesLaden(){
       fetch(api + '/rest/v1/websites?select=schluessel,name&aktiv=is.true&order=name', { headers: kopf() })
         .then(function(r){ return r.ok ? r.json() : []; })
         .then(function(rows){
-          var sel = $('#site');
           (rows||[]).forEach(function(w){
+            firmen[w.schluessel] = w.name;
             var o = document.createElement('option');
             o.value = w.schluessel; o.textContent = w.name;
-            sel.appendChild(o);
+            $('#site').appendChild(o);
           });
-        })
-        .catch(function(){});
+        }).catch(function(){});
     }
 
-    function load(){
+    /* ------------------------- Anfragen / Bewerbungen ---------------------- */
+
+    // Bearbeitungsstand ändern bzw. Eintrag löschen
+    function setzeStatus(tabelle, id, wert, neuLaden){
+      fetch(api + '/rest/v1/' + tabelle + '?id=eq.' + encodeURIComponent(id), {
+        method:'PATCH',
+        headers: kopf({ 'Content-Type':'application/json', Prefer:'return=minimal' }),
+        body: JSON.stringify({ status: wert })
+      }).then(function(r){
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        neuLaden();
+      }).catch(function(e){ status('Ändern nicht möglich: ' + esc(e.message), false); });
+    }
+    function loesche(tabelle, id, neuLaden){
+      fetch(api + '/rest/v1/' + tabelle + '?id=eq.' + encodeURIComponent(id), {
+        method:'DELETE', headers: kopf({ Prefer:'return=minimal' })
+      }).then(function(r){
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        neuLaden();
+      }).catch(function(e){ status('Löschen nicht möglich: ' + esc(e.message), false); });
+    }
+
+    function etikett(st){
+      if (st === 'erledigt')  return '<span class="etikett et-erledigt">erledigt</span>';
+      if (st === 'in Arbeit') return '<span class="etikett et-arbeit">in Arbeit</span>';
+      return '<span class="etikett et-neu">neu</span>';
+    }
+    function herkunft(seite){
+      return $('#site').value ? '' :
+        '<span class="etikett" style="color:var(--mute);border-color:var(--line)">'
+        + esc(firmen[seite] || seite) + '</span>';
+    }
+    function knoepfe(tabelle, e, neuLaden){
+      var b = [];
+      if (e.status !== 'in Arbeit' && e.status !== 'erledigt')
+        b.push('<button class="btn btn--klein" data-tun="arbeit" data-id="'+esc(e.id)+'">In Arbeit</button>');
+      if (e.status !== 'erledigt')
+        b.push('<button class="btn btn--klein btn--primary" data-tun="erledigt" data-id="'+esc(e.id)+'">Erledigt</button>');
+      else
+        b.push('<button class="btn btn--klein" data-tun="neu" data-id="'+esc(e.id)+'">Wieder öffnen</button>');
+      b.push('<button class="btn btn--klein" data-tun="loeschen" data-id="'+esc(e.id)+'" '
+           + 'style="margin-left:auto;color:#b3261e">Löschen</button>');
+      return '<div class="aktionen">' + b.join('') + '</div>';
+    }
+    function verdrahte(wurzel, tabelle, neuLaden){
+      $$('[data-tun]', wurzel).forEach(function(b){
+        b.addEventListener('click', function(){
+          var id = b.dataset.id;
+          if (b.dataset.tun === 'loeschen'){
+            if (!confirm('Diesen Eintrag endgültig löschen?')) return;
+            loesche(tabelle, id, neuLaden);
+          } else {
+            setzeStatus(tabelle, id,
+              b.dataset.tun === 'arbeit' ? 'in Arbeit' : b.dataset.tun === 'neu' ? 'neu' : 'erledigt',
+              neuLaden);
+          }
+        });
+      });
+    }
+
+    function anfragenLaden(){
+      if (!api) return;
+      var url = api + '/rest/v1/kontaktanfragen?select=*&order=erstellt_am.desc&limit=500' + seitenFilter();
+      fetch(url, { headers: kopf() })
+        .then(function(r){ if(!r.ok) throw new Error(r.status+' '+r.statusText); return r.json(); })
+        .then(function(rows){
+          rows = rows || [];
+          var offen = rows.filter(function(e){ return e.status !== 'erledigt'; });
+          var zahl = $('#zahlAnfragen');
+          zahl.textContent = offen.length;
+          zahl.classList.toggle('hidden', offen.length === 0);
+          $('#anfragenInfo').textContent = rows.length + (rows.length === 1 ? ' Anfrage' : ' Anfragen')
+            + ' insgesamt · ' + offen.length + ' unerledigt';
+
+          var zeigen = $('#nurOffeneA').checked ? offen : rows;
+          var ziel = $('#anfragen');
+          if (!zeigen.length){
+            ziel.innerHTML = '<div class="card leer">Noch keine Anfragen über das Formular.<br>'
+              + '<span class="note">Sobald jemand das Kontaktformular abschickt, steht sie hier.</span></div>';
+            return;
+          }
+          ziel.innerHTML = zeigen.map(function(e){
+            var name = ((e.vorname||'') + ' ' + (e.nachname||'')).trim() || 'Ohne Namen';
+            return '<article class="eintrag' + (e.status==='neu'?' neu':'') + '">'
+              + '<div class="eintrag__kopf"><span class="eintrag__name">' + esc(name) + '</span>'
+              + '<span>' + herkunft(e.seite) + ' ' + etikett(e.status)
+              + ' <span class="eintrag__zeit">' + datum(e.erstellt_am) + '</span></span></div>'
+              + '<div class="zeile">'
+              + (e.telefon ? '<span><b>Telefon</b><a href="tel:' + esc(String(e.telefon).replace(/\s+/g,'')) + '">' + esc(e.telefon) + '</a></span>' : '')
+              + (e.email   ? '<span><b>E-Mail</b><a href="mailto:' + esc(e.email) + '">' + esc(e.email) + '</a></span>' : '')
+              + (e.adresse ? '<span><b>Adresse</b>' + esc(e.adresse) + '</span>' : '')
+              + '</div>'
+              + '<div class="zeile">'
+              + (e.anliegen  ? '<span><b>Anliegen</b>' + esc(e.anliegen) + '</span>' : '')
+              + (e.objektart ? '<span><b>Objektart</b>' + esc(e.objektart) + '</span>' : '')
+              + (e.quelle    ? '<span><b>Kam von Seite</b>' + esc(e.quelle) + '</span>' : '')
+              + '</div>'
+              + (e.nachricht ? '<div class="nachricht">' + esc(e.nachricht) + '</div>' : '')
+              + knoepfe('kontaktanfragen', e, anfragenLaden)
+              + '</article>';
+          }).join('');
+          verdrahte(ziel, 'kontaktanfragen', anfragenLaden);
+        })
+        .catch(function(err){ status('<b>Anfragen konnten nicht geladen werden:</b> ' + esc(err.message)
+          + '. Notfalls Seite neu laden und erneut anmelden.', false); });
+    }
+
+    function bewerbungenLaden(){
+      if (!api) return;
+      var url = api + '/rest/v1/bewerbungen?select=*&order=erstellt_am.desc&limit=500' + seitenFilter();
+      fetch(url, { headers: kopf() })
+        .then(function(r){ if(!r.ok) throw new Error(r.status+' '+r.statusText); return r.json(); })
+        .then(function(rows){
+          rows = rows || [];
+          var offen = rows.filter(function(e){ return e.status !== 'erledigt'; });
+          var zahl = $('#zahlBewerbungen');
+          zahl.textContent = offen.length;
+          zahl.classList.toggle('hidden', offen.length === 0);
+          $('#bewerbungenInfo').textContent = rows.length
+            + (rows.length === 1 ? ' Bewerbung' : ' Bewerbungen') + ' insgesamt · '
+            + offen.length + ' unerledigt';
+
+          var zeigen = $('#nurOffeneB').checked ? offen : rows;
+          var ziel = $('#bewerbungen');
+          if (!zeigen.length){
+            ziel.innerHTML = '<div class="card leer">Noch keine Bewerbungen.<br>'
+              + '<span class="note">Bewerbungen aus dem Formular auf der Karriere-Seite landen hier.</span></div>';
+            return;
+          }
+          ziel.innerHTML = zeigen.map(function(e){
+            var name = ((e.vorname||'') + ' ' + (e.nachname||'')).trim() || 'Ohne Namen';
+            return '<article class="eintrag' + (e.status==='neu'?' neu':'') + '">'
+              + '<div class="eintrag__kopf"><span class="eintrag__name">' + esc(name) + '</span>'
+              + '<span>' + herkunft(e.seite) + ' ' + etikett(e.status)
+              + ' <span class="eintrag__zeit">' + datum(e.erstellt_am) + '</span></span></div>'
+              + '<div class="zeile">'
+              + (e.stelle  ? '<span><b>Stelle</b>' + esc(e.stelle) + '</span>' : '')
+              + (e.ort     ? '<span><b>Ort</b>' + esc(e.ort) + '</span>' : '')
+              + (e.telefon ? '<span><b>Telefon</b><a href="tel:' + esc(String(e.telefon).replace(/\s+/g,'')) + '">' + esc(e.telefon) + '</a></span>' : '')
+              + (e.email   ? '<span><b>E-Mail</b><a href="mailto:' + esc(e.email) + '">' + esc(e.email) + '</a></span>' : '')
+              + '</div>'
+              + '<div class="zeile" style="gap:8px">'
+              + unterlage(e.lebenslauf_pfad,  'Lebenslauf')
+              + unterlage(e.anschreiben_pfad, 'Anschreiben')
+              + '</div>'
+              + knoepfe('bewerbungen', e, bewerbungenLaden)
+              + '</article>';
+          }).join('');
+          $$('[data-datei]', ziel).forEach(function(b){
+            b.addEventListener('click', function(){ oeffneUnterlage(b.dataset.datei, b); });
+          });
+          verdrahte(ziel, 'bewerbungen', bewerbungenLaden);
+        })
+        .catch(function(err){ status('<b>Bewerbungen konnten nicht geladen werden:</b> ' + esc(err.message), false); });
+    }
+
+    function unterlage(pfad, titel){
+      if (!pfad) return '<span class="note" style="margin:0">Kein ' + titel + '</span>';
+      return '<button class="btn btn--klein" data-datei="' + esc(pfad) + '">' + titel + ' öffnen</button>';
+    }
+    // Die Ablage ist privat. Deshalb erst einen zeitlich begrenzten Link erzeugen.
+    function oeffneUnterlage(pfad, btn){
+      var alt = btn.textContent;
+      btn.textContent = 'Wird geöffnet …'; btn.disabled = true;
+      fetch(api + '/storage/v1/object/sign/' + (cfg.BEWERBUNG_BUCKET||'bewerbungen') + '/' + pfad, {
+        method:'POST',
+        headers: kopf({ 'Content-Type':'application/json' }),
+        body: JSON.stringify({ expiresIn: 3600 })
+      })
+      .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
+      .then(function(res){
+        if (!res.ok || !res.j.signedURL) throw new Error(res.j.message || 'Datei nicht gefunden');
+        window.open(api + '/storage/v1' + res.j.signedURL, '_blank');
+      })
+      .catch(function(e){ status('Unterlage konnte nicht geöffnet werden: ' + esc(e.message), false); })
+      .then(function(){ btn.textContent = alt; btn.disabled = false; });
+    }
+
+    /* ------------------------------- Besucher ------------------------------ */
+    var selbst = $('#selbst');
+    try { selbst.checked = localStorage.getItem('ah_no_track') === '1'; } catch(e){}
+    selbst.addEventListener('change', function(){
+      try {
+        if (selbst.checked) localStorage.setItem('ah_no_track','1');
+        else localStorage.removeItem('ah_no_track');
+      } catch(e){}
+    });
+
+    function messungSeit(){
+      if (!api) return;
+      fetch(api + '/rest/v1/' + (cfg.TRACK_TABLE||'seitenaufrufe')
+            + '?select=erstellt_am&order=erstellt_am.asc&limit=1', { headers: kopf() })
+        .then(function(r){ return r.ok ? r.json() : []; })
+        .then(function(rows){
+          var el = $('#seit');
+          if (!rows || !rows.length){ el.textContent = 'Es wurde noch kein Seitenaufruf gezählt.'; return; }
+          var d = new Date(rows[0].erstellt_am);
+          var tage = Math.max(1, Math.round((Date.now() - d.getTime()) / 864e5));
+          el.textContent = 'Gemessen wird seit dem ' + d.toLocaleDateString('de-DE')
+            + ' – also seit ' + tage + (tage === 1 ? ' Tag' : ' Tagen') + '.';
+        }).catch(function(){});
+    }
+
+    function besucherLaden(){
       if (!api || !cfg.SUPABASE_ANON_KEY){
-        status('<b>Noch nicht konfiguriert.</b> Trage in <code>assets/js/site-config.js</code> die Supabase-URL und den anon-Key ein und führe <code>Supabase-Websites/01_schema.sql</code> aus. Bis dahin bleibt das Dashboard leer.', false);
+        status('<b>Noch nicht konfiguriert.</b> Trage in <code>assets/js/site-config.js</code> die Supabase-URL '
+             + 'und den anon-Key ein und führe <code>Supabase-Websites/01_schema.sql</code> aus.', false);
         return;
       }
       var days = parseInt($('#range').value,10);
-      var seite = $('#site').value;
       var base = api + '/rest/v1/' + (cfg.TRACK_TABLE||'seitenaufrufe');
       var q = '?select=seite,pfad,titel,quelle,device,sprache,erstellt_am&order=erstellt_am.desc&limit=50000';
       if (days>0){ var since=new Date(Date.now()-days*864e5).toISOString(); q += '&erstellt_am=gte.'+since; }
-      if (seite) q += '&seite=eq.' + encodeURIComponent(seite);
+      q += seitenFilter();
       fetch(base+q, { headers: kopf() })
         .then(function(r){ if(!r.ok) throw new Error(r.status+' '+r.statusText); return r.json(); })
         .then(render)
-        .catch(function(err){ status('<b>Daten konnten nicht geladen werden:</b> '+esc(err.message)+'. Ist die Anmeldung noch gültig? Notfalls Seite neu laden und erneut anmelden.', false); });
+        .catch(function(err){ status('<b>Daten konnten nicht geladen werden:</b> '+esc(err.message)
+          + '. Ist die Anmeldung noch gültig? Notfalls Seite neu laden und erneut anmelden.', false); });
     }
 
     function render(rows){
@@ -204,33 +516,29 @@
         devices[r.device||'?'] = (devices[r.device||'?']||0)+1;
         var lg=(r.sprache||'').slice(0,2)||'?'; langs[lg]=(langs[lg]||0)+1;
         var day = new Date(t); day.setHours(0,0,0,0);
-        var key = day.toISOString().slice(0,10);
-        byDay[key]=(byDay[key]||0)+1;
+        byDay[toKey(day)]=(byDay[toKey(day)]||0)+1;
       });
       var total = rows.length;
 
       $('#kpis').innerHTML = [
-        ['Seitenaufrufe gesamt', total],
-        ['Heute', d1],
-        ['Letzte 7 Tage', d7],
-        ['Letzte 30 Tage', d30]
+        ['Seitenaufrufe gesamt', total], ['Heute', d1],
+        ['Letzte 7 Tage', d7], ['Letzte 30 Tage', d30]
       ].map(function(k){ return '<div class="card kpi"><b>'+k[1].toLocaleString('de-DE')+'</b><span>'+k[0]+'</span></div>'; }).join('');
 
-      // chart last N days
       var span = parseInt($('#range').value,10) || 30; if(span>60) span=60;
       var cols=[]; var maxV=1;
       for (var i=span-1;i>=0;i--){ var dd=new Date(now-i*864e5); dd.setHours(0,0,0,0);
-        var key=dd.toISOString().slice(0,10); var v=byDay[key]||0; if(v>maxV)maxV=v;
-        cols.push({k:key,v:v,lbl:dd.getDate()+'.'+(dd.getMonth()+1)}); }
+        var v=byDay[toKey(dd)]||0; if(v>maxV)maxV=v;
+        cols.push({v:v,lbl:dd.getDate()+'.'+(dd.getMonth()+1),k:toKey(dd)}); }
       $('#chart').innerHTML = cols.map(function(c,idx){
         var show = span<=14 || idx%Math.ceil(span/12)===0;
-        return '<div class="col" title="'+c.k+': '+c.v+'"><i style="height:'+(c.v/maxV*130)+'px"></i><small>'+(show?c.lbl:'')+'</small></div>';
+        return '<div class="col" title="'+c.k+': '+c.v+'"><i style="height:'+(c.v/maxV*130)+'px"></i><small>'
+             +(show?c.lbl:'')+'</small></div>';
       }).join('');
 
-      // „Aufrufe je Website" nur zeigen, wenn nicht ohnehin auf eine gefiltert ist
       var einzeln = !!$('#site').value;
       $('#sitesCard').style.display = einzeln ? 'none' : '';
-      if (!einzeln) bars('#sites', sites, total, false);
+      if (!einzeln) bars('#sites', sites, total, false, true);
 
       bars('#pages', pages, total, true);
       bars('#sources', sources, total, false);
@@ -238,14 +546,20 @@
       bars('#langs', langs, total, false);
     }
 
-    function bars(sel, obj, total, isPage){
-      var arr = Object.keys(obj).map(function(k){ return [k,obj[k]]; }).sort(function(a,b){ return b[1]-a[1]; }).slice(0,8);
-      if (!arr.length){ document.querySelector(sel).innerHTML='<p class="note">Noch keine Daten.</p>'; return; }
+    // Ortszeit, nicht UTC – sonst rutschen Aufrufe nach Mitternacht auf den Vortag.
+    function toKey(d){
+      return d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2);
+    }
+
+    function bars(sel, obj, total, isPage, istSeite){
+      var arr = Object.keys(obj).map(function(k){ return [k,obj[k]]; })
+                  .sort(function(a,b){ return b[1]-a[1]; }).slice(0,8);
+      if (!arr.length){ $(sel).innerHTML='<p class="note">Noch keine Daten.</p>'; return; }
       var max = arr[0][1]||1;
-      document.querySelector(sel).innerHTML = arr.map(function(x){
-        var pct = Math.round(x[1]/total*100);
-        var label = isPage ? x[0].replace(/\.html$/,'') : x[0];
-        return '<div class="bar"><span class="bar__label" title="'+label+'">'+ (label||'?') +'</span>'
+      $(sel).innerHTML = arr.map(function(x){
+        var pct = total ? Math.round(x[1]/total*100) : 0;
+        var label = istSeite ? (firmen[x[0]] || x[0]) : isPage ? x[0].replace(/\.html$/,'') : x[0];
+        return '<div class="bar"><span class="bar__label" title="'+esc(label)+'">'+ esc(label||'?') +'</span>'
           + '<span class="bar__val">'+x[1]+' · '+pct+'%</span>'
           + '<span class="bar__track"><span class="bar__fill" style="width:'+Math.max(2,x[1]/max*100)+'%"></span></span></div>';
       }).join('');
