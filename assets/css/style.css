@@ -1132,3 +1132,45 @@ html.a11y-read .a11y-fx :is(p,h1,h2,h3,h4,li,blockquote,figcaption,dd,dt){ curso
 .doc-extra svg{ width:16px; height:16px; }
 .doc-source{ font-size:.82rem; color:var(--ink-mute); margin:6px 0 14px; }
 .btn.is-disabled{ opacity:.55; cursor:not-allowed; pointer-events:none; }
+
+/* ------------------------- Robody / Devanthro ---------------------------- */
+.robody-feature{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); background:#fff; border:2px solid var(--primary-100);
+  border-radius:var(--r-lg); overflow:hidden; box-shadow:var(--shadow); color:var(--ink); text-decoration:none;
+  transition:transform .18s, box-shadow .18s, border-color .18s; }
+.robody-feature:hover{ transform:translateY(-3px); box-shadow:var(--shadow-lg); border-color:var(--primary); color:var(--ink); }
+.robody-feature__media img{ width:100%; height:100%; min-height:260px; object-fit:cover; display:block; }
+.robody-feature__body{ display:flex; flex-direction:column; align-items:flex-start; gap:12px; padding:30px 32px;
+  background:linear-gradient(135deg,#fff 55%,var(--primary-50)); }
+.robody-feature__badge{ display:inline-flex; align-items:center; gap:6px; background:var(--primary); color:#fff; font-weight:700;
+  font-size:.82rem; padding:5px 12px; border-radius:999px; letter-spacing:.02em; }
+.robody-feature__badge svg{ width:15px; height:15px; }
+.robody-feature__logo{ height:34px; width:auto; }
+.robody-feature__title{ font-size:1.45rem; font-weight:800; line-height:1.25; }
+.robody-feature__text{ color:var(--ink-soft); }
+.robody-feature__more{ display:inline-flex; align-items:center; gap:8px; font-weight:700; color:var(--primary); margin-top:4px; }
+.robody-feature__more svg{ width:18px; height:18px; transition:transform .18s; }
+.robody-feature:hover .robody-feature__more svg{ transform:translateX(4px); }
+@media (max-width:760px){ .robody-feature{ grid-template-columns:1fr; }
+  .robody-feature__media img{ min-height:0; aspect-ratio:4/3; } .robody-feature__body{ padding:22px; } }
+
+.split--robody .robody-img{ width:100%; height:auto; border-radius:var(--r-xl); box-shadow:var(--shadow-lg); aspect-ratio:3/2; object-fit:cover; background:var(--cream-2); }
+.split--top{ align-items:start; }
+.robody-logo{ height:40px; width:auto; margin:4px 0 18px; }
+.robody-quelle{ font-size:.82rem; color:var(--accent-soft); text-align:center; margin:22px 0 0; }
+.robody-quelle--dark{ color:var(--ink-mute); margin:0; }
+
+.robody-plan{ list-style:none; margin:20px 0 0; padding:0; position:relative; }
+.robody-plan::before{ content:""; position:absolute; left:47px; top:14px; bottom:14px; width:2px; background:var(--line-strong); }
+.robody-plan__item{ position:relative; display:grid; grid-template-columns:96px 1fr; gap:18px; align-items:start; margin-bottom:22px; }
+.robody-plan__item:last-child{ margin-bottom:0; }
+.robody-plan__zeit{ position:relative; z-index:1; background:var(--primary); color:#fff; font-weight:800; font-size:.88rem;
+  text-align:center; padding:7px 6px; border-radius:12px; box-shadow:0 4px 12px rgba(184,82,52,.28); }
+.robody-plan__item h3{ font-size:1.1rem; margin:4px 0 4px; }
+.robody-plan__item p{ color:var(--ink-soft); margin:0; }
+
+.robody-cta{ text-align:center; background:#fff; border:1px solid var(--line); border-radius:var(--r-xl); padding:40px 28px; box-shadow:var(--shadow); }
+.robody-cta__ic{ width:64px; height:64px; border-radius:18px; background:var(--primary-50); color:var(--primary); display:inline-grid; place-items:center; margin-bottom:14px; }
+.robody-cta__ic svg{ width:34px; height:34px; }
+.robody-cta p{ color:var(--ink-soft); max-width:560px; margin:0 auto 22px; }
+.robody-cta__btns{ display:flex; flex-wrap:wrap; gap:12px; justify-content:center; }
+.robody-cta__hint{ font-size:.85rem; margin:16px auto 0 !important; }
